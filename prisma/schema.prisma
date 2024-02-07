@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wallpapers Wallpaper[]
+
+  favorites Wallpaper[] @relation("UserFavorites")
+  favorite  Favorite[]
+}
+
+model Wallpaper {
+  id    String @id @default(uuid())
+  title String
+  slug  String @unique
+  url   String
+
+  createdBy User   @relation(fields: [userId], references: [id])
+  userId    String
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+
+  tag Tag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  favoritedBy User[]     @relation("UserFavorites")
+  favorite    Favorite[]
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  wallpapers Wallpaper[]
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  Wallpaper   Wallpaper? @relation(fields: [wallpaperId], references: [id])
+  wallpaperId String?
+}
+
+model Favorite {
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  wallpaper   Wallpaper @relation(fields: [wallpaperId], references: [id])
+  wallpaperId String
+  createdAt   DateTime  @default(now())
+}
